@@ -4,6 +4,7 @@ const csv = require('csvtojson');
 const { 정답 } = require("../database/answer");
 
 const csvFilePath = './database/data.csv';
+const { log, groupCollapsed, groupEnd } = console;
 
 interface DataRow {
   id?: string,
@@ -31,14 +32,18 @@ interface DataRow {
   bonus_7?: string;
 }
 
-(async function main() {
+(async function run() {
   const jsonDataset = await getData();
   const dataset = getMapDataset(jsonDataset);
   const scoreById = getScoreById(dataset);
 
-  console.groupCollapsed('[참여한 사람] ------> ', scoreById.size);
-  console.log(scoreById);
-  console.groupEnd();
+  const score19 = getIdsByScore(scoreById, 19);
+
+  groupCollapsed('[FEConf2020 Pop Quiz 당첨자 선정]');
+  log(`참여한 사람: ${scoreById.size}명`);
+  log('');
+  log(`만점자 (${score19.length}) -> `, score19);
+  groupEnd();
 })();
 
 function getData(): Promise<DataRow[]> {
@@ -86,4 +91,12 @@ function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
   const sorted = Array.from(scoreById.entries()).sort(([aId, aScore], [bId, bScore]) => bScore - aScore);
 
   return new Map(sorted);
+}
+
+function getIdsByScore(dataset: Map<string, number>, score: number) {
+  return Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => id);
+}
+
+function maskingEmail(email: string) {
+    
 }
