@@ -2,8 +2,10 @@
 /* eslint-disable no-undef */
 const csv = require('csvtojson');
 const { 정답 } = require("../database/answer");
+const { 경품 } = require("../database/gift");
 
 const csvFilePath = './database/data.csv';
+const TIMEOUT_MS = 3000;
 const { log, groupCollapsed, groupEnd } = console;
 
 interface DataRow {
@@ -36,13 +38,25 @@ interface DataRow {
   const jsonDataset = await getData();
   const dataset = getMapDataset(jsonDataset);
   const scoreById = getScoreById(dataset);
-
   const score19 = getIdsByScore(scoreById, 19);
 
   groupCollapsed('[FEConf2020 Pop Quiz 당첨자 선정]');
-  log(`참여한 사람: ${scoreById.size}명`);
   log('');
-  log(`만점자 (${score19.length}) -> `, score19);
+  log(`[NPC] 이번 Pop Quiz에 참여해주신 분은 총 ${scoreById.size}명이었습니다!`);
+  await delay(TIMEOUT_MS);
+  log('');
+  log(`점수를 계산해보니 만점자가 총 ${score19.length}명 계셨고, 그 명단은 다음과 같습니다! -> `, score19.map(v => maskingEmail(v)));
+  await delay(TIMEOUT_MS);
+  log('');
+  log('[NPC] 그럼 이제 만점자 중에서 추첨을 돌려 경품 당첨자를 뽑이보겠습니다.');
+  await delay(TIMEOUT_MS);
+  log('[NPC] 두구두구두구...');
+  await delay(TIMEOUT_MS);
+  log('[NPC] 두구두구두구두구두구두구...');
+  await delay(TIMEOUT_MS);
+  log('당첨자 -> ', gatcha(score19, 경품));
+
+  log('[NPC] 축하드립니다!');
   groupEnd();
 })();
 
@@ -76,7 +90,7 @@ function getMapDataset(jsonDataset) {
   return dataset;
 }
 
-function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
+export function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
   const scoreById = new Map<string, number>();
   
   Array.from(dataset.entries()).map(([id, answerObject]) => {
@@ -94,7 +108,7 @@ function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
 }
 
 function getIdsByScore(dataset: Map<string, number>, score: number) {
-  return Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => maskingEmail(id));
+  return Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => id);
 }
 
 function maskingEmail(email: string) {
@@ -110,4 +124,28 @@ function maskingEmail(email: string) {
 
 function toMask(target: string[]) {
     return target.map(() => '*').join('');
+}
+
+function gatcha(target: string[], giftList: Record<number, string>) {
+  return Object.entries(giftList).reverse().map(([rank, giftName]) => {
+    let flag = true;
+
+    while (flag) {
+      const key = Date.now() % target.length;
+      const id = target[key];
+
+      if (id != null) {
+        delete target[key];
+        flag = false;
+
+        return `${rank}등 당첨, ${id}님! ${giftName} 당첨!`;
+      } else {
+        flag = true;
+      }
+    }
+  });
+}
+
+function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
