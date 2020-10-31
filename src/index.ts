@@ -94,9 +94,20 @@ function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
 }
 
 function getIdsByScore(dataset: Map<string, number>, score: number) {
-  return Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => id);
+  return Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => maskingEmail(id));
 }
 
 function maskingEmail(email: string) {
+    const [id, domain] = email.split('@');
+    const [first, second, third, ...middle] = id.split('');
+    const idMaskTarget = middle.slice(0, middle.length - 1);
+    const last = middle[middle.length - 1];
     
+    const [firstDomain, secondDomain, ...domainMaskTarget] = domain.split('');
+
+    return `${first}${second}${third}${toMask(idMaskTarget)}${last} @ ${firstDomain}${secondDomain}${toMask(domainMaskTarget)}`;
+}
+
+function toMask(target: string[]) {
+    return target.map(() => '*').join('');
 }
