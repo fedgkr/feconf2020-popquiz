@@ -6,6 +6,7 @@
         "semi": "error",
         "no-tabs":"error",
         "eol-last":"error",
+        "no-undef": "off",
         "padding-line-between-statements": [
             "error",
             { "blankLine": "always", "prev": "*", "next": "return" }
