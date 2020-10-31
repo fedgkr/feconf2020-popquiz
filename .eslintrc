@@ -1,0 +1,14 @@
+{
+    "extends": "eslint:recommended",
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint", "prettier"],
+    "rules": {
+        "semi": "error",
+        "no-tabs":"error",
+        "eol-last":"error",
+        "padding-line-between-statements": [
+            "error",
+            { "blankLine": "always", "prev": "*", "next": "return" }
+        ]
+    }
+}
