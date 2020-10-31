@@ -1,6 +1,4 @@
 /* eslint-disable no-unused-vars */
-
-
 /* eslint-disable no-undef */
 const csv = require('csvtojson');
 const chalk = require('chalk');
