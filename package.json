@@ -15,6 +15,7 @@
     "@types/node": "^14.14.6",
     "@typescript-eslint/eslint-plugin": "^4.6.0",
     "@typescript-eslint/parser": "^4.6.0",
+    "chalk": "^4.1.0",
     "csv-parser": "^2.3.3",
     "csvtojson": "^2.0.10",
     "eslint": "^7.12.1",
