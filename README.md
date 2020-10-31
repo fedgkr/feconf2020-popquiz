@@ -24,7 +24,7 @@
 
 ```sh
 $ npm install
-$ npm start
+$ ntl
 # database/*.csv 파일이 있어야 정상적으로 실행됩니다.
 ```
 
