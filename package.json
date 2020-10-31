@@ -1,9 +1,9 @@
 {
-  "name": "popquiz",
+  "name": "@feconfkr/commandline",
   "version": "1.0.0",
   "description": "FEConf2020 Pop Quiz 당첨자 선정 script",
   "scripts": {
-    "start": "ts-node ./index.ts",
+    "start:2020-popquiz": "ts-node ./src/command/popquiz.ts",
     "test": "jest",
     "lint": "eslint -c .eslintrc 'src/**/*.ts' --fix"
   },

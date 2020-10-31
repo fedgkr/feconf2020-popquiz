@@ -1,14 +1,17 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-const csv = require('csvtojson');
+const path = require('path');
 const chalk = require('chalk');
-const { 정답 } = require("../database/answer");
-import { chunk } from "lodash";
-import { GiftInfo, 경품 } from "../database/gift";
 
-const csvFilePath = './database/data.csv';
+import { chunk } from "lodash";
+import { delay } from '../utils/delay';
+import { getData } from "../utils/file";
+import { groupCollapsed, groupEnd, log, table } from '../utils/log';
+import { maskingEmail } from "../utils/maskingEmail";
+import { 정답 } from "./models/answer";
+import { GiftInfo, 경품 } from "./models/gift";
+
 const TIMEOUT_MS = 3000;
-const { log, table, groupCollapsed, groupEnd } = console;
 
 interface DataRow {
   id?: string,
@@ -39,7 +42,7 @@ interface DataRow {
 const PERFECT_SCORE = 12;
 
 export async function run() {
-  const jsonDataset = await getData();
+  const jsonDataset = await getData(path.resolve(__dirname, '../../database/popquiz.csv'));
   const dataset = getMapDataset(jsonDataset);
   const scoreById = getScoreById(dataset);
   const perfectScore = getIdsByScore(scoreById, PERFECT_SCORE);
@@ -101,14 +104,6 @@ export async function run() {
   groupEnd();
 }
 
-function getData(): Promise<DataRow[]> {
-  return new Promise((resolve) => {
-    csv()
-      .fromFile(csvFilePath)
-      .then(resolve);
-  });
-}
-
 function getMapDataset(jsonDataset) {
   const dataset = new Map<string, Omit<DataRow, 'id'>>();
 
@@ -131,7 +126,7 @@ function getMapDataset(jsonDataset) {
   return dataset;
 }
 
-export function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
+function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
   const scoreById = new Map<string, number>();
 
   Array.from(dataset.entries()).map(([id, answerObject]) => {
@@ -150,21 +145,6 @@ export function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
 
 function getIdsByScore(dataset: Map<string, number>, score: number) {
   return Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => id);
-}
-
-export function maskingEmail(email: string) {
-    const [id, domain] = email.split('@');
-    const [first, second, third, ...middle] = id.split('');
-    const idMaskTarget = middle.slice(0, middle.length - 1);
-    const last = middle[middle.length - 1];
-
-    const [firstDomain, secondDomain, ...domainMaskTarget] = domain.split('');
-
-    return `${first}${second}${third}${toMask(idMaskTarget)}${last}@${firstDomain}${secondDomain}${toMask(domainMaskTarget)}`;
-}
-
-function toMask(target: string[]) {
-    return target.map(() => '*').join('');
 }
 
 function gatcha(target: string[], giftList: GiftInfo[]) {
@@ -191,9 +171,7 @@ function gatcha(target: string[], giftList: GiftInfo[]) {
   });
 }
 
-function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+
 
 function renderTable(dataset: string[], unit: number) {
   table(chunk(dataset.map(maskingEmail), unit));
