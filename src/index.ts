@@ -39,7 +39,7 @@ export async function run() {
   const jsonDataset = await getData();
   const dataset = getMapDataset(jsonDataset);
   const scoreById = getScoreById(dataset);
-  const score19 = getIdsByScore(scoreById, 19);
+  const score20 = getIdsByScore(scoreById, 20);
 
   groupCollapsed(
     chalk.bold(
@@ -53,12 +53,12 @@ export async function run() {
   await delay(TIMEOUT_MS);
   log('');
   log(
-    `점수를 계산해보니 만점자가 총 ${chalk.bold(score19.length)}명 계셨고, 그 명단은 다음과 같습니다!: `,
-    score19.map(v => maskingEmail(v))
+    `점수를 계산해보니 퀴즈를 모두 맞춰주신 20점 만점자가 총 ${chalk.bold(score20.length)}명 이었고,\n그 명단은 다음과 같습니다!: `,
+    score20.map(v => maskingEmail(v))
   );
   await delay(TIMEOUT_MS);
   log('');
-  log(`${chalk.cyan('[NPC]')} 그럼 이제 만점자 중에서 ${chalk.underline('경품 당첨자')}를 뽑이보겠습니다.`);
+  log(`${chalk.cyan('[NPC]')} 그럼 이제 동점자 추첨 룰을 기반으로,\n만점자 중에서 ${chalk.underline('경품 당첨자')}를 뽑이보겠습니다.`);
   await delay(TIMEOUT_MS);
   log(`${chalk.cyan('[NPC]')} ${chalk.bold('두구두구두구...')}`);
   await delay(TIMEOUT_MS);
@@ -67,7 +67,7 @@ export async function run() {
 
   await delay(TIMEOUT_MS);
   log('');
-  groupCollapsed(`🎉 ${chalk.inverse('당첨자: ')} `, gatcha(score19, 경품));
+  groupCollapsed(`🎉 ${chalk.inverse('당첨자: ')} `, gatcha(score20, 경품));
 
   log(`${chalk.cyan('[NPC]')} 축하드립니다!`);
   groupEnd();
