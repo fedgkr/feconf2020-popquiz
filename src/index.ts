@@ -35,7 +35,7 @@ interface DataRow {
   bonus_7?: string;
 }
 
-(async function run() {
+export async function run() {
   const jsonDataset = await getData();
   const dataset = getMapDataset(jsonDataset);
   const scoreById = getScoreById(dataset);
@@ -71,10 +71,6 @@ interface DataRow {
 
   log(`${chalk.cyan('[NPC]')} 축하드립니다!`);
   groupEnd();
-})();
-
-function bold(content: string | number) {
-  return chalk.bold(content);
 }
 
 function getData(): Promise<DataRow[]> {
@@ -128,7 +124,7 @@ function getIdsByScore(dataset: Map<string, number>, score: number) {
   return Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => id);
 }
 
-function maskingEmail(email: string) {
+export function maskingEmail(email: string) {
     const [id, domain] = email.split('@');
     const [first, second, third, ...middle] = id.split('');
     const idMaskTarget = middle.slice(0, middle.length - 1);
