@@ -3,11 +3,12 @@
 const csv = require('csvtojson');
 const chalk = require('chalk');
 const { 정답 } = require("../database/answer");
+import { chunk } from "lodash";
 import { GiftInfo, 경품 } from "../database/gift";
 
 const csvFilePath = './database/data.csv';
 const TIMEOUT_MS = 3000;
-const { log, groupCollapsed, groupEnd } = console;
+const { log, table, groupCollapsed, groupEnd } = console;
 
 interface DataRow {
   id?: string,
@@ -35,11 +36,13 @@ interface DataRow {
   bonus_7?: string;
 }
 
+const PERFECT_SCORE = 12;
+
 export async function run() {
   const jsonDataset = await getData();
   const dataset = getMapDataset(jsonDataset);
   const scoreById = getScoreById(dataset);
-  const score20 = getIdsByScore(scoreById, 20);
+  const perfectScore = getIdsByScore(scoreById, PERFECT_SCORE);
 
   groupCollapsed(
     chalk.bold(
@@ -53,23 +56,48 @@ export async function run() {
   await delay(TIMEOUT_MS);
   log('');
   log(
-    `점수를 계산해보니 퀴즈를 모두 맞춰주신 20점 만점자가 총 ${chalk.bold(score20.length)}명 이었고,\n그 명단은 다음과 같습니다!: `,
-    score20.map(v => maskingEmail(v))
+    `점수를 계산해보니 퀴즈를 모두 맞춰주신 ${PERFECT_SCORE}점 만점자가 총 ${chalk.bold(perfectScore.length)}명 이었고\n그 명단은 다음과 같습니다!: `,
   );
   await delay(TIMEOUT_MS);
+  renderTable(perfectScore, 4);
+  await delay(TIMEOUT_MS);
   log('');
-  log(`${chalk.cyan('[NPC]')} 그럼 이제 동점자 추첨 룰을 기반으로,\n만점자 중에서 ${chalk.underline('경품 당첨자')}를 뽑이보겠습니다.`);
+  log(`${chalk.cyan('[NPC]')} 그럼 이제 동점자 추첨 룰을 기반으로,\n만점자 중에서 ${chalk.underline('경품 당첨자')}를 추첨하겠습니다.`);
   await delay(TIMEOUT_MS);
-  log(`${chalk.cyan('[NPC]')} ${chalk.bold('두구두구두구...')}`);
+  log(`${chalk.cyan('[NPC]')} ${chalk.bold('🥁 두구두구두구...')}`);
   await delay(TIMEOUT_MS);
-  log(`${chalk.cyan('[NPC]')} ${chalk.bold('두구두구두구두구두구두구...')}`);
+  log(`${chalk.cyan('[NPC]')} ${chalk.bold('🥁 두구두구두구두구두구두구...')}`);
   groupEnd();
 
   await delay(TIMEOUT_MS);
   log('');
-  groupCollapsed(`🎉 ${chalk.inverse('당첨자: ')} `, gatcha(score20, 경품));
+  groupCollapsed(`🎉 ${chalk.inverse('당첨자')}를 발표합니다!!!`);
+  await delay(TIMEOUT_MS);
+  log('');
 
-  log(`${chalk.cyan('[NPC]')} 축하드립니다!`);
+  const [fourth1, fourth2, fourth3, third, second, first] = gatcha(perfectScore, 경품);
+
+  log(`🎖  ${fourth1.rank}등 ${fourth1.giftName} 당첨!, ${maskingEmail(fourth1.id)}님!`);
+  await delay(TIMEOUT_MS);
+  log(`🎖  ${fourth2.rank}등 ${fourth2.giftName} 당첨!, ${maskingEmail(fourth2.id)}님!`);
+  await delay(TIMEOUT_MS);
+  log(`🎖  ${fourth3.rank}등 ${fourth3.giftName} 당첨!, ${maskingEmail(fourth3.id)}님!`);
+  await delay(TIMEOUT_MS);
+  log('');
+  await delay(TIMEOUT_MS);
+  log(`🥉 ${third.rank}등 ${third.giftName} 당첨!, ${maskingEmail(third.id)}님!`);
+  await delay(TIMEOUT_MS);
+  log('');
+  await delay(TIMEOUT_MS);
+  log(`🥈 ${second.rank}등 ${second.giftName} 당첨!, ${maskingEmail(second.id)}님!`);
+  await delay(TIMEOUT_MS);
+  log('');
+  await delay(TIMEOUT_MS);
+  log(`🥇 ${first.rank}등 ${first.giftName} 당첨!, ${maskingEmail(first.id)}님!`);
+  log('');
+  await delay(TIMEOUT_MS);
+  log('');
+  log(`${chalk.cyan('[NPC]')} 모두 축하드립니다! 🎁`);
   groupEnd();
 }
 
@@ -110,12 +138,12 @@ export function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
     const score = Object.entries(answerObject).reduce((score, [questionId, answer]) => {
       const answers = 정답[questionId];
 
-      return answers?.includes(answer) ? score + 1 : score;
+      return answers?.includes(answer) ? score < 12 ? score + 1 : score : score;
     }, 0);
 
     scoreById.set(id, score);
   });
-  const sorted = Array.from(scoreById.entries()).sort(([aId, aScore], [bId, bScore]) => bScore - aScore);
+  const sorted = Array.from(scoreById.entries()).sort(([, aScore], [, bScore]) => bScore - aScore);
 
   return new Map(sorted);
 }
@@ -132,7 +160,7 @@ export function maskingEmail(email: string) {
 
     const [firstDomain, secondDomain, ...domainMaskTarget] = domain.split('');
 
-    return `${first}${second}${third}${toMask(idMaskTarget)}${last} @ ${firstDomain}${secondDomain}${toMask(domainMaskTarget)}`;
+    return `${first}${second}${third}${toMask(idMaskTarget)}${last}@${firstDomain}${secondDomain}${toMask(domainMaskTarget)}`;
 }
 
 function toMask(target: string[]) {
@@ -151,7 +179,11 @@ function gatcha(target: string[], giftList: GiftInfo[]) {
         delete target[key];
         flag = false;
 
-        return `${rank}등 당첨, ${maskingEmail(id)}님! ${giftName} 당첨!`;
+        return {
+          rank,
+          giftName,
+          id,
+        };
       } else {
         flag = true;
       }
@@ -161,4 +193,8 @@ function gatcha(target: string[], giftList: GiftInfo[]) {
 
 function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function renderTable(dataset: string[], unit: number) {
+  table(chunk(dataset.map(maskingEmail), unit));
 }
