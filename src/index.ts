@@ -94,7 +94,9 @@ export async function run() {
   log('');
   await delay(TIMEOUT_MS);
   log(`🥇 ${first.rank}등 ${first.giftName} 당첨!, ${maskingEmail(first.id)}님!`);
-
+  log('');
+  await delay(TIMEOUT_MS);
+  log('');
   log(`${chalk.cyan('[NPC]')} 모두 축하드립니다! 🎁`);
   groupEnd();
 }
