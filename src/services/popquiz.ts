@@ -5,7 +5,7 @@ const chalk = require('chalk');
 
 import { chunk } from "lodash";
 import { delay } from '../utils/delay';
-import { getData } from "../utils/file";
+import { getData, writeFile } from "../utils/file";
 import { groupCollapsed, groupEnd, log, table } from '../utils/log';
 import { maskingEmail } from "../utils/maskingEmail";
 import { 정답 } from "./models/answer";
@@ -55,17 +55,24 @@ export async function run() {
     )
   );
   log('');
-  log(`${chalk.cyan('[NPC]')} 이번 Pop Quiz에 참여해주신 분은 총 ${chalk.bold(scoreById.size)}명이었습니다!`);
+  log(`${chalk.cyan('[NPC]')} 두둥등장.
+안녕하세요? FEConf 참가자 여러분.
+오래 기다리셨던 Pop Quiz 이벤트 추첨 진행을 시작합니다.`);
+
+  await delay(TIMEOUT_MS);
+  log('');
+  log(`${chalk.cyan('[NPC]')} 이번 Pop Quiz에 참여해주신 분은 총 ${chalk.bold(scoreById.size)}분 입니다!`);
+
   await delay(TIMEOUT_MS);
   log('');
   log(
-    `점수를 계산해보니 퀴즈를 모두 맞춰주신 ${PERFECT_SCORE}점 만점자가 총 ${chalk.bold(perfectScore.length)}명 이었고\n그 명단은 다음과 같습니다!: `,
+    `점수를 계산해보니 ${PERFECT_SCORE}점 만점자가 총 ${chalk.bold(perfectScore.length)}명 이었고\n그 명단은 다음과 같습니다!`,
   );
   await delay(TIMEOUT_MS);
   renderTable(perfectScore, 4);
   await delay(TIMEOUT_MS);
   log('');
-  log(`${chalk.cyan('[NPC]')} 그럼 이제 동점자 추첨 룰을 기반으로,\n만점자 중에서 ${chalk.underline('경품 당첨자')}를 추첨하겠습니다.`);
+  log(`${chalk.cyan('[NPC]')} 그럼 이제 동점자 추첨 룰을 기반으로, 만점자 중에서 ${chalk.underline('경품 당첨자')}를 추첨하겠습니다.`);
   await delay(TIMEOUT_MS);
   log(`${chalk.cyan('[NPC]')} ${chalk.bold('🥁 두구두구두구...')}`);
   await delay(TIMEOUT_MS);
@@ -101,6 +108,10 @@ export async function run() {
   await delay(TIMEOUT_MS);
   log('');
   log(`${chalk.cyan('[NPC]')} 모두 축하드립니다! 🎁`);
+  log('');
+  log(`퀴즈의 정답과 점수 산출 기준은 FEConf2020 GitHub에서 확인 가능합니다.
+FEConf GitHub Repository
+-> https://github.com/fedgkr/feconf2020-popquiz`);
   groupEnd();
 }
 
@@ -144,11 +155,14 @@ function getScoreById(dataset: Map<string, Omit<DataRow, 'id'>>) {
 }
 
 function getIdsByScore(dataset: Map<string, number>, score: number) {
-  return Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => id);
+  const target=Array.from(dataset.entries()).filter(([, value]) => value === score).map(([id]) => id);
+  writeFile('perfectScore', target.map(data => JSON.stringify(data)).join(','));
+
+  return target;
 }
 
 function gatcha(target: string[], giftList: GiftInfo[]) {
-  return giftList.reverse().map(({rank, giftName}) => {
+  const winner = giftList.reverse().map(({rank, giftName}) => {
     let flag = true;
 
     while (flag) {
@@ -169,6 +183,10 @@ function gatcha(target: string[], giftList: GiftInfo[]) {
       }
     }
   });
+
+  writeFile('winner', winner.map(data => JSON.stringify(data)).join(','));
+
+  return winner;
 }
 
 

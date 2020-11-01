@@ -1,5 +1,6 @@
 import { error } from "./log";
 
+const fs = require('fs-extra');
 const csv = require('csvtojson');
 
 export function getData<T>(filePath): Promise<T> {
@@ -11,3 +12,8 @@ export function getData<T>(filePath): Promise<T> {
     });
   }
   
+export function writeFile(name: string, data: string) {
+  fs.writeJson(`./database/${name}.json`, { name: data }, err => {
+    if (err) return console.error(err);
+  });
+}
